@@ -61,14 +61,12 @@
       text-shadow: 1px 1px 3px var(--shadow-color);
     }
 
-    /* Table-like layout */
     .leaderboard-list {
       list-style: none;
       padding: 0;
       margin: 0;
     }
 
-    /* Header row */
     .leaderboard-list .header-row {
       display: flex;
       font-weight: 700;
@@ -93,15 +91,14 @@
     .col-stars {
       flex-basis: 18%;
       text-align: center;
-      margin-right: 30px; /* reduced spacing between stars and last seen */
+      margin-right: 30px;
     }
 
     .col-lastseen {
       flex-basis: 35%;
-      text-align: right; /* keep right alignment */
+      text-align: right;
     }
 
-    /* Items */
     .leaderboard-item {
       display: flex;
       align-items: center;
@@ -128,8 +125,6 @@
       text-align: right;
       font-style: italic;
       color: #ffcc00cc;
-
-      /* Prevent overflow with ellipsis */
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -170,6 +165,44 @@
 
     .back-btn:hover svg {
       fill: #fff;
+    }
+
+    /* MOBILE RESPONSIVE STYLES */
+    @media (max-width: 480px) {
+      .leaderboard-container {
+        padding: 20px 15px;
+      }
+
+      .leaderboard-list .header-row,
+      .leaderboard-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+      }
+
+      .col-name,
+      .col-stars,
+      .col-lastseen,
+      .leaderboard-user,
+      .stars,
+      .last-seen {
+        flex-basis: 100%;
+        text-align: left !important;
+        margin: 0;
+      }
+
+      .leaderboard-item {
+        padding-bottom: 8px;
+        border-bottom: 1px solid rgba(255,255,255,0.2);
+      }
+
+      .back-btn {
+        width: 100%;
+        max-width: none;
+        font-size: 1rem;
+        padding: 12px;
+        margin-top: 20px;
+      }
     }
   </style>
 </head>
@@ -216,7 +249,7 @@
     const db = firebase.firestore();
 
     document.getElementById("backBtn").addEventListener("click", () => {
-      window.location.href = "major.html"; // Adjust if your game page filename differs
+      window.location.href = "major.html";
     });
 
     function formatDate(isoString) {
@@ -234,7 +267,6 @@
     async function loadLeaderboard() {
       const leaderboardList = document.getElementById("leaderboardList");
 
-      // Remove existing non-header children
       while (leaderboardList.children.length > 1) {
         leaderboardList.removeChild(leaderboardList.lastChild);
       }
@@ -257,7 +289,6 @@
           const userStars = data.stars || 0;
           const userName = data.username || "Player";
           const lastSeenISO = data.lastSeen || null;
-
           const lastSeenText = formatDate(lastSeenISO);
 
           const li = document.createElement("li");
@@ -291,6 +322,7 @@
   </script>
 </body>
 </html>
+
 
 
 

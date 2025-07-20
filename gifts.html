@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gifts Leaderboard</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <style>
+    body.gifts-page {
+      background-color: #1a1a2e;
+      color: #fff;
+      font-family: 'Arial', sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+
+    h1.heading {
+      color: #fbd105;
+      margin-bottom: 20px;
+    }
+
+    table {
+      width: 90%;
+      margin: 0 auto 30px auto;
+      border-collapse: collapse;
+      background: #292948;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 0 10px #fbd105a0;
+    }
+
+    th, td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #444;
+    }
+
+    th {
+      background-color: #fbd105;
+      color: #000;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    tbody tr:hover {
+      background-color: #3a3a6e;
+      transition: background-color 0.3s ease;
+    }
+  </style>
+</head>
+<body class="gifts-page">
+  <h1 class="heading">🎁 Available Rewards</h1>
+
+  <table id="gifts-table">
+    <thead>
+      <tr>
+        <th>POSITION</th>
+        <th>VALUE</th>
+        <th>REWARD</th>
+      </tr>
+    </thead>
+    <tbody id="gifts-body">
+      <!-- Gifts data will be inserted here -->
+    </tbody>
+  </table>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBdDyCiJ7flRZh2jbaYo5q4Hpjpou-rHAc",
+      authDomain: "brainpicklesotho-ef66c.firebaseapp.com",
+      projectId: "brainpicklesotho-ef66c",
+      storageBucket: "brainpicklesotho-ef66c.appspot.com",
+      messagingSenderId: "273452901797",
+      appId: "1:273452901797:web:edfbc18ee4043c3931f44c",
+      measurementId: "G-CXYY42FTEF"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const giftsRef = db.collection('gifts');
+
+    const giftsBody = document.getElementById('gifts-body');
+
+    async function loadGifts() {
+      giftsBody.innerHTML = '';
+
+      try {
+        const snapshot = await giftsRef.orderBy('position', 'asc').get();
+
+        if (snapshot.empty) {
+          giftsBody.innerHTML = `<tr><td colspan="3" style="color:#bbb;">No gifts found.</td></tr>`;
+          return;
+        }
+
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          const row = `
+            <tr>
+              <td>${data.position}</td>
+              <td>${data.value}</td>
+              <td>${data.reward}</td>
+            </tr>
+          `;
+          giftsBody.innerHTML += row;
+        });
+      } catch (error) {
+        giftsBody.innerHTML = `<tr><td colspan="3" style="color:red;">Error loading gifts.</td></tr>`;
+        console.error('Error fetching gifts:', error);
+      }
+    }
+
+    loadGifts();
+  </script>
+</body>
+</html>
