@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BrainPick Loader</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #0f0f0f;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: 'Poppins', sans-serif;
+      overflow: hidden;
+      color: #fff;
+    }
+
+    .loader-container {
+      text-align: center;
+      animation: popIn 2s ease-out forwards;
+    }
+
+    .logo-letter {
+      font-size: 100px;
+      font-weight: 800;
+      color: #ffcc00;
+      letter-spacing: 2px;
+      transform: scale(0.5);
+      opacity: 0;
+      animation: bounceIn 2s ease forwards;
+    }
+
+    .app-name {
+      font-size: 28px;
+      margin-top: 10px;
+      color: #ffffff;
+      letter-spacing: 3px;
+      opacity: 0;
+      animation: fadeInText 2s ease forwards;
+      animation-delay: 1s;
+    }
+
+    .loading-wrapper {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      margin: 30px auto 0;
+    }
+
+    .loading-text {
+      font-size: 16px;
+      color: #ffcc00;
+      animation: blink 1.2s infinite;
+      position: absolute;
+      top: 40px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      z-index: 2;
+    }
+
+    .stars {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      animation: rotate 2s linear infinite;
+    }
+
+    .star {
+      width: 6px;
+      height: 6px;
+      background: #ffcc00;
+      border-radius: 50%;
+      position: absolute;
+    }
+
+    .star:nth-child(1) { top: 0; left: 50%; transform: translateX(-50%); }
+    .star:nth-child(2) { top: 14%; left: 85%; transform: translate(-50%, -50%); }
+    .star:nth-child(3) { top: 50%; left: 100%; transform: translate(-50%, -50%); }
+    .star:nth-child(4) { top: 85%; left: 85%; transform: translate(-50%, -50%); }
+    .star:nth-child(5) { top: 100%; left: 50%; transform: translate(-50%, -100%); }
+    .star:nth-child(6) { top: 85%; left: 14%; transform: translate(-50%, -50%); }
+    .star:nth-child(7) { top: 50%; left: 0%; transform: translate(-50%, -50%); }
+    .star:nth-child(8) { top: 14%; left: 14%; transform: translate(-50%, -50%); }
+
+    @keyframes bounceIn {
+      0% { opacity: 0; transform: scale(0.5); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes fadeInText {
+      0% { opacity: 0; transform: translateY(10px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    @keyframes rotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="loader-container">
+    <div class="logo-letter">B</div>
+    <div class="app-name">BrainPick</div>
+
+    <div class="loading-wrapper">
+      <div class="loading-text">Loading...</div>
+      <div class="stars">
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    setTimeout(() => {
+      window.location.href = "login.html"
+    }, 5000);
+  </script>
+</body>
+</html>

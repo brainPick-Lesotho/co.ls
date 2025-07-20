@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BrainPick - Play</title>
+  <style>
+    :root {
+      --background-start: black;
+      --background-end: #1f2024;
+      --primary-color: #ffcc00;
+      --primary-hover: #00bfa5;
+      --input-bg: #fff;
+      --input-color: #333;
+      --text-color: #fff;
+      --shadow-color: rgba(0, 0, 0, 0.5);
+      --container-bg: rgba(255, 255, 255, 0.1);
+      --container-border: rgba(255, 255, 255, 0.2);
+      --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      background: linear-gradient(135deg, var(--background-start), var(--background-end));
+      font-family: var(--font-family);
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: 2.5rem;
+      color: var(--text-color);
+      text-shadow: 1px 1px 4px var(--shadow-color);
+    }
+
+    .player-info {
+      margin-top: 10px;
+      font-size: 1.2rem;
+      color: var(--primary-color);
+      font-weight: bold;
+    }
+
+    .game-container {
+      background: var(--container-bg);
+      border: 2px solid var(--container-border);
+      border-radius: 16px;
+      padding: 30px;
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
+      position: relative;
+      z-index: 1;
+    }
+
+    .question {
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      text-align: left;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--primary-color);
+    }
+
+    .input-box {
+      width: 100%;
+      padding: 14px 15px;
+      font-size: 1rem;
+      border-radius: 10px;
+      border: none;
+      margin-bottom: 20px;
+      outline: none;
+      background: var(--input-bg);
+      color: var(--input-color);
+      box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
+      transition: box-shadow 0.3s ease;
+    }
+
+    .input-box:focus {
+      box-shadow: 0 0 8px var(--primary-color);
+    }
+
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    button {
+      height: 46px;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+      user-select: none;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      max-width: 500px;
+    }
+
+    button:focus {
+      outline: none;
+      transform: scale(1.03);
+    }
+
+    .submit-btn {
+      background-color: var(--primary-color);
+      color: #000;
+    }
+
+    .submit-btn:hover {
+      background-color: var(--primary-hover);
+      color: #fff;
+      box-shadow: 0 6px 15px rgba(0, 191, 165, 0.5);
+    }
+
+    .home-btn {
+      background-color: var(--primary-color);
+      color: #000;
+      max-width: 80px;
+      width: 80px;
+      padding: 0;
+      height: 40px;
+      border-radius: 8px;
+      justify-content: center;
+    }
+
+    .home-btn:hover {
+      background-color: #ffb300;
+      color: #fff;
+      box-shadow: 0 6px 15px rgba(255, 204, 0, 0.4);
+    }
+
+    .home-btn img {
+      width: 24px;
+      height: 24px;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .result {
+      margin-top: 20px;
+      font-size: 1rem;
+      font-weight: bold;
+      min-height: 40px;
+      color: var(--primary-color);
+    }
+
+    .stars {
+      color: var(--primary-color);
+      font-weight: bold;
+    }
+
+    /* Balloon confetti container */
+    #balloon-container {
+      pointer-events: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: visible;
+      z-index: 9999;
+    }
+
+    /* Balloon styles */
+    .balloon {
+      position: absolute;
+      bottom: -100px;
+      width: 30px;
+      height: 40px;
+      border-radius: 50% / 60%;
+      background-color: red;
+      opacity: 0.85;
+      animation: floatUp 3.5s ease-in forwards;
+      filter: drop-shadow(0 0 2px rgba(0,0,0,0.2));
+    }
+    .balloon::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      width: 2px;
+      height: 15px;
+      background: #333;
+      transform: translateX(-50%);
+      border-radius: 1px;
+    }
+
+    /* Different balloon colors */
+    .balloon.color1 { background-color: #ff4d4d; }
+    .balloon.color2 { background-color: #4d94ff; }
+    .balloon.color3 { background-color: #ffb84d; }
+    .balloon.color4 { background-color: #4dff88; }
+    .balloon.color5 { background-color: #ff4db8; }
+
+    @keyframes floatUp {
+      0% {
+        bottom: -100px;
+        opacity: 0.85;
+        transform: translateX(0) rotate(0deg);
+      }
+      50% {
+        opacity: 1;
+        transform: translateX(20px) rotate(10deg);
+      }
+      100% {
+        bottom: 110vh;
+        opacity: 0;
+        transform: translateX(-20px) rotate(-10deg);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>🧠 BrainPick - Play</h1>
+    <div class="player-info" id="playerInfo">Loading...</div>
+  </div>
+
+  <div class="game-container">
+    <p class="question">
+      Guess a number between <strong>1–6</strong>. System generates 3 numbers.<br />
+      If your guess matches any, you win a <span class="stars">⭐</span>!
+    </p>
+
+    <label for="guessInput">Your Guess (1–6):</label>
+    <input type="number" class="input-box" id="guessInput" placeholder="Enter number" min="1" max="6" />
+
+    <div class="btn-group">
+      <button class="submit-btn" id="tryBtn">🎯 Try</button>
+      <button class="home-btn" id="homeBtn" title="Go Back">
+        <img src="https://cdn-icons-png.flaticon.com/512/93/93634.png" alt="Back" />
+      </button>
+    </div>
+
+    <div class="result" id="result"></div>
+  </div>
+
+  <!-- Balloon container -->
+  <div id="balloon-container"></div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBdDyCiJ7flRZh2jbaYo5q4Hpjpou-rHAc",
+      authDomain: "brainpicklesotho-ef66c.firebaseapp.com",
+      projectId: "brainpicklesotho-ef66c",
+      storageBucket: "brainpicklesotho-ef66c.appspot.com",
+      messagingSenderId: "273452901797",
+      appId: "1:273452901797:web:edfbc18ee4043c3931f44c",
+      measurementId: "G-CXYY42FTEF"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    let currentUser = null;
+    let stars = 0;
+    let username = "";
+
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        currentUser = user;
+        const uid = user.uid;
+
+        db.collection("users").doc(uid).get().then(doc => {
+          if (doc.exists) {
+            username = doc.data().username || "Player";
+            stars = doc.data().stars || 0;
+            document.getElementById("playerInfo").innerHTML =
+              `👤 ${username} | ⭐ <span class="stars" id="starsDisplay">${stars}</span>`;
+          } else {
+            alert("User data not found.");
+          }
+        }).catch(error => {
+          console.error("Error fetching user data:", error);
+        });
+
+      } else {
+        alert("You must log in to play.");
+        window.location.href = "login.html";
+      }
+    });
+
+    function createBalloon() {
+      const balloonContainer = document.getElementById('balloon-container');
+      const balloon = document.createElement('div');
+      balloon.classList.add('balloon');
+
+      // Random horizontal position within viewport width
+      balloon.style.left = Math.random() * 100 + 'vw';
+
+      // Random color class
+      const colors = ['color1', 'color2', 'color3', 'color4', 'color5'];
+      balloon.classList.add(colors[Math.floor(Math.random() * colors.length)]);
+
+      balloonContainer.appendChild(balloon);
+
+      // Remove balloon after animation duration (3.5s)
+      setTimeout(() => {
+        balloon.remove();
+      }, 3500);
+    }
+
+    function showBalloons(count = 15) {
+      for (let i = 0; i < count; i++) {
+        setTimeout(() => {
+          createBalloon();
+        }, i * 150);
+      }
+    }
+
+    function playGame() {
+      const guess = parseInt(document.getElementById("guessInput").value);
+      const resultBox = document.getElementById("result");
+
+      if (!guess || guess < 1 || guess > 6) {
+        resultBox.innerText = "⚠️ Enter a number between 1 and 6.";
+        return;
+      }
+
+      const numbers = [
+        Math.floor(Math.random() * 6) + 1,
+        Math.floor(Math.random() * 6) + 1,
+        Math.floor(Math.random() * 6) + 1
+      ];
+
+if (numbers.includes(guess)) {
+  stars += 1;
+  const now = new Date();
+
+  document.getElementById("starsDisplay").innerText = stars;
+  resultBox.innerText = `🎉 You won! Numbers: ${numbers.join(', ')}. +1 ⭐`;
+
+  db.collection("users").doc(currentUser.uid).update({
+    stars: stars,
+    lastSeen: now.toISOString() // save ISO string timestamp
+  }).catch(error => {
+    console.error("Error updating stars and lastSeen:", error);
+  });
+
+} else {
+  resultBox.innerText = `❌ Try again. Numbers were: ${numbers.join(', ')}.`;
+}
+
+
+      document.getElementById("guessInput").value = "";
+    }
+
+    document.getElementById("tryBtn").addEventListener("click", playGame);
+    document.getElementById("homeBtn").addEventListener("click", () => {
+      window.location.href = "major.html";
+    });
+
+    document.getElementById("guessInput").addEventListener("keypress", e => {
+      if (e.key === "Enter") {
+        playGame();
+      }
+    });
+  </script>
+</body>
+</html>
+
+
+

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Eldah Guessing Game</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #0f0f0f;
+      color: #ffffff;
+      overflow-x: hidden;
+    }
+
+    .header {
+      padding: 40px 20px;
+      text-align: center;
+      background: linear-gradient(90deg, #0f0f0f, #1a1a1a);
+    }
+
+    .header h1 {
+      font-size: 42px;
+      color: #ffcc00;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      font-size: 18px;
+      color: #bbb;
+    }
+
+    .section-container {
+      margin: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .section {
+      background: #1f1f1f;
+      border-left: 8px solid #ffcc00;
+      padding: 20px 30px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: 0.3s;
+    }
+
+    .section:hover {
+      background: #2c2c2c;
+      transform: scale(1.02);
+    }
+
+    .section .label {
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .section .icon {
+      font-size: 32px;
+    }
+
+    .section a {
+      color: #ffcc00;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 16px;
+      margin-left: 10px;
+    }
+
+    @media (max-width: 600px) {
+      .section {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>🎮 BrainPick</h1>
+    <p>Guess numbers, earn stars, and dominate the leaderboard for massive cash prices!</p>
+  </div>
+
+  <div class="section-container">
+
+    <div class="section" onclick="location.href='Game.html'">
+      <div class="label">🕹️ Play Game</div>
+      <a href="Game.html">Start</a>
+    </div>
+
+    <div class="section" onclick="location.href='leaderboard.html'">
+      <div class="label">🏆 Leaderboard</div>
+      <a href="#">View Top Players</a>
+    </div>
+
+    <div class="section">
+      <div class="label">📞 Contact</div>
+      <a href="#">Reach Out</a>
+    </div>
+
+    <div class="section">
+  <div class="label">ℹ️ About</div>
+  <a href="#">learn more about BrainPick</a>
+</div>
+</body>
+</html>

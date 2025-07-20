@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BrainPick - Leaderboard</title>
+  <style>
+    :root {
+      --background-start: black;
+      --background-end: #1f2024;
+      --primary-color: #ffcc00;
+      --text-color: #fff;
+      --container-bg: rgba(255, 255, 255, 0.1);
+      --container-border: rgba(255, 255, 255, 0.2);
+      --shadow-color: rgba(0, 0, 0, 0.5);
+      --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      background: linear-gradient(135deg, var(--background-start), var(--background-end));
+      font-family: var(--font-family);
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      color: var(--text-color);
+      text-shadow: 1px 1px 4px var(--shadow-color);
+    }
+
+    .leaderboard-container {
+      background: var(--container-bg);
+      border: 2px solid var(--container-border);
+      border-radius: 16px;
+      padding: 25px 30px;
+      width: 100%;
+      max-width: 600px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
+      color: var(--text-color);
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .leaderboard-container h2 {
+      margin-top: 0;
+      color: var(--primary-color);
+      margin-bottom: 20px;
+      font-size: 1.4rem;
+      text-align: center;
+      text-shadow: 1px 1px 3px var(--shadow-color);
+    }
+
+    /* Table-like layout */
+    .leaderboard-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    /* Header row */
+    .leaderboard-list .header-row {
+      display: flex;
+      font-weight: 700;
+      border-bottom: 2px solid var(--primary-color);
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+      font-size: 1rem;
+      color: var(--primary-color);
+      user-select: none;
+      align-items: center;
+    }
+
+    .leaderboard-list .header-row > div,
+    .leaderboard-item > div {
+      flex-shrink: 0;
+    }
+
+    .col-name {
+      flex-basis: 40%;
+    }
+
+    .col-stars {
+      flex-basis: 18%;
+      text-align: center;
+      margin-right: 30px; /* reduced spacing between stars and last seen */
+    }
+
+    .col-lastseen {
+      flex-basis: 35%;
+      text-align: right; /* keep right alignment */
+    }
+
+    /* Items */
+    .leaderboard-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 18px;
+      font-size: 0.9rem;
+      gap: 10px;
+    }
+
+    .leaderboard-user {
+      flex-basis: 40%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .stars {
+      flex-basis: 18%;
+      text-align: center;
+      min-width: 40px;
+    }
+
+    .last-seen {
+      flex-basis: 35%;
+      text-align: right;
+      font-style: italic;
+      color: #ffcc00cc;
+
+      /* Prevent overflow with ellipsis */
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .back-btn {
+      margin-top: 25px;
+      background-color: var(--primary-color);
+      color: #000;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      padding: 10px 20px;
+      font-size: 1.1rem;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      max-width: 120px;
+      justify-content: center;
+      user-select: none;
+      transition: background-color 0.3s ease;
+    }
+
+    .back-btn:hover {
+      background-color: #e6b800;
+      color: #fff;
+      box-shadow: 0 6px 15px rgba(255, 204, 0, 0.5);
+    }
+
+    .back-btn svg {
+      width: 18px;
+      height: 18px;
+      fill: #000;
+      transition: fill 0.3s ease;
+    }
+
+    .back-btn:hover svg {
+      fill: #fff;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>🏆 BrainPick - Leaderboard</h1>
+  </div>
+
+  <div class="leaderboard-container">
+    <h2>Top Players</h2>
+    <ul class="leaderboard-list" id="leaderboardList">
+      <li class="header-row">
+        <div class="col-name">Name</div>
+        <div class="col-stars">STARS</div>
+        <div class="col-lastseen">LAST SEEN</div>
+      </li>
+      <li>Loading leaderboard...</li>
+    </ul>
+
+    <button class="back-btn" id="backBtn" title="Back to Game">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg> Back
+    </button>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBdDyCiJ7flRZh2jbaYo5q4Hpjpou-rHAc",
+      authDomain: "brainpicklesotho-ef66c.firebaseapp.com",
+      projectId: "brainpicklesotho-ef66c",
+      storageBucket: "brainpicklesotho-ef66c.appspot.com",
+      messagingSenderId: "273452901797",
+      appId: "1:273452901797:web:edfbc18ee4043c3931f44c",
+      measurementId: "G-CXYY42FTEF"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    document.getElementById("backBtn").addEventListener("click", () => {
+      window.location.href = "major.html"; // Adjust if your game page filename differs
+    });
+
+    function formatDate(isoString) {
+      if (!isoString) return "Never";
+      const date = new Date(isoString);
+      return date.toLocaleString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+
+    async function loadLeaderboard() {
+      const leaderboardList = document.getElementById("leaderboardList");
+
+      // Remove existing non-header children
+      while (leaderboardList.children.length > 1) {
+        leaderboardList.removeChild(leaderboardList.lastChild);
+      }
+
+      try {
+        const snapshot = await db.collection("users")
+          .orderBy("stars", "desc")
+          .limit(10)
+          .get();
+
+        if (snapshot.empty) {
+          const li = document.createElement("li");
+          li.textContent = "No players found.";
+          leaderboardList.appendChild(li);
+          return;
+        }
+
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          const userStars = data.stars || 0;
+          const userName = data.username || "Player";
+          const lastSeenISO = data.lastSeen || null;
+
+          const lastSeenText = formatDate(lastSeenISO);
+
+          const li = document.createElement("li");
+          li.className = "leaderboard-item";
+
+          li.innerHTML = `
+            <div class="leaderboard-user col-name">${userName}</div>
+            <div class="stars col-stars">⭐ ${userStars}</div>
+            <div class="last-seen col-lastseen">${lastSeenText}</div>
+          `;
+
+          leaderboardList.appendChild(li);
+        });
+
+      } catch (error) {
+        console.error("Error loading leaderboard:", error);
+        const li = document.createElement("li");
+        li.textContent = "Error loading leaderboard.";
+        leaderboardList.appendChild(li);
+      }
+    }
+
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        loadLeaderboard();
+      } else {
+        alert("You must log in to view the leaderboard.");
+        window.location.href = "login.html";
+      }
+    });
+  </script>
+</body>
+</html>
+
+
+
+
+
