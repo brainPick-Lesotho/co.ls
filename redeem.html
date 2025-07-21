@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Redeem Voucher - BrainPick</title>
+<style>
+  body {
+    background-color: black;
+    color: white;
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    overflow-x: hidden;
+    position: relative;
+  }
+  h1 {
+    color: #ffcc00;
+    text-align: center;
+    margin-bottom: 30px;
+    text-shadow: 0 0 8px #ffcc00;
+  }
+  label {
+    display: block;
+    margin-top: 10px;
+    color: white;
+  }
+  input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+    font-size: 16px;
+  }
+  button {
+    margin-top: 15px;
+    padding: 12px;
+    width: 100%;
+    background-color: #ffcc00;
+    color: black;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+  }
+  button:hover {
+    background-color: #e6b800;
+  }
+  .result {
+    margin-top: 25px;
+    padding: 25px 20px;
+    border-radius: 12px;
+    background-color: #1f1f1f;
+    box-shadow: 0 0 12px #ffcc00;
+    text-align: center;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 22px;
+    color: #fff;
+    user-select: all;
+    white-space: pre-wrap;
+    min-height: 140px;
+    position: relative;
+    overflow: visible;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  .voucher-code {
+    margin-top: 12px;
+    padding: 15px 30px;
+    background-color: #ffcc00;
+    color: black;
+    font-weight: 900;
+    font-size: 32px;
+    border-radius: 16px;
+    box-shadow:
+      0 0 10px #fff700,
+      0 0 30px #ffcc00;
+    letter-spacing: 4px;
+    user-select: all;
+    font-family: 'Courier New', Courier, monospace;
+    text-align: center;
+    display: inline-block;
+  }
+  .congrats-message {
+    font-size: 28px;
+    font-weight: 700;
+    color: #ffcc00;
+    text-shadow: 0 0 12px #ffcc00;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+
+  /* Confetti pieces styles */
+  .confetti {
+    position: absolute;
+    bottom: -20px;
+    width: 10px;
+    height: 20px;
+    opacity: 0.9;
+    border-radius: 3px;
+    animation-name: floatUpConfetti, rotateConfetti;
+    animation-timing-function: ease-in-out, linear;
+    animation-iteration-count: 1, infinite;
+    animation-fill-mode: forwards;
+  }
+
+  @keyframes floatUpConfetti {
+    0% {
+      transform: translate(0, 0) rotate(0deg);
+      opacity: 0.9;
+    }
+    50% {
+      opacity: 0.7;
+    }
+    100% {
+      transform: translate(30px, -600px) rotate(360deg);
+      opacity: 0;
+    }
+  }
+  @keyframes rotateConfetti {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+</style>
+</head>
+<body>
+  <h1>🎁 Redeem Voucher</h1>
+
+  <label for="email">Email</label>
+  <input type="email" id="email" placeholder="Enter your registered email" />
+
+  <label for="password">Password</label>
+  <input type="password" id="password" placeholder="Enter your password" />
+
+  <button onclick="redeemVoucher()">Redeem</button>
+
+  <div class="result" id="voucherResult"></div>
+
+  <!-- Firebase SDKs -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, doc, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBdDyCiJ7flRZh2jbaYo5q4Hpjpou-rHAc",
+      authDomain: "brainpicklesotho-ef66c.firebaseapp.com",
+      projectId: "brainpicklesotho-ef66c",
+      storageBucket: "brainpicklesotho-ef66c.appspot.com",
+      messagingSenderId: "273452901797",
+      appId: "1:273452901797:web:edfbc18ee4043c3931f44c",
+      measurementId: "G-CXYY42FTEF"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    function randomColor() {
+      const colors = ['#e74c3c', '#f1c40f', '#2ecc71', '#3498db', '#9b59b6', '#f39c12'];
+      return colors[Math.floor(Math.random() * colors.length)];
+    }
+
+    function createConfetti(left, duration) {
+      const confetti = document.createElement('div');
+      confetti.classList.add('confetti');
+      confetti.style.left = left + 'px';
+      confetti.style.backgroundColor = randomColor();
+      confetti.style.animationDuration = duration + 's, 1s'; // floatUp duration, rotate duration
+      confetti.style.animationDelay = (Math.random() * 2) + 's, 0s'; // stagger floatUp, rotate start immediately
+      confetti.style.transformOrigin = 'center center';
+      confetti.style.width = (5 + Math.random() * 8) + 'px';
+      confetti.style.height = (10 + Math.random() * 15) + 'px';
+      return confetti;
+    }
+
+    window.redeemVoucher = async function() {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const resultDiv = document.getElementById("voucherResult");
+      resultDiv.innerHTML = "Processing...";
+      clearConfetti();
+
+      if (!email || !password) {
+        resultDiv.innerHTML = "❌ Please enter both email and password.";
+        return;
+      }
+
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+
+        // Fetch all users
+        const usersSnapshot = await getDocs(collection(db, "users"));
+        const users = [];
+        usersSnapshot.forEach(doc => {
+          const data = doc.data();
+          users.push({ email: data.email.toLowerCase(), stars: Number(data.stars) || 0 });
+        });
+
+        // Sort descending by stars
+        users.sort((a, b) => b.stars - a.stars);
+
+        // Find rank by email (case insensitive)
+        const rank = users.findIndex(u => u.email === email.toLowerCase()) + 1;
+
+        if (rank === 0) {
+          resultDiv.innerHTML = "❌ Your email is not found in the users list.";
+          return;
+        }
+
+        let voucherRef;
+        if (rank === 1) {
+          voucherRef = doc(db, "vouchers", "1st");
+        } else if (rank === 2) {
+          voucherRef = doc(db, "vouchers", "2nd");
+        } else if (rank === 3) {
+          voucherRef = doc(db, "vouchers", "3rd");
+        } else {
+          resultDiv.innerHTML = "❌ You are not in the top 3 to redeem a voucher.";
+          return;
+        }
+
+        const voucherSnap = await getDoc(voucherRef);
+        if (voucherSnap.exists()) {
+          const voucher = voucherSnap.data().code?.trim();
+          if (!voucher) {
+            resultDiv.innerHTML = "⚠️ No voucher to redeem.";
+            return;
+          }
+
+          resultDiv.innerHTML = `
+            <div class="congrats-message">🎉 Congratulations! 🎉</div>
+            <div><strong>✅ Your Voucher:</strong></div>
+            <div class="voucher-code">${voucher}</div>
+          `;
+          launchConfetti();
+        } else {
+          resultDiv.innerHTML = "⚠️ No voucher to redeem.";
+        }
+
+      } catch (error) {
+        resultDiv.innerHTML = `❌ Error: ${error.message}`;
+      }
+    };
+
+    function launchConfetti() {
+      const container = document.getElementById('voucherResult');
+      for (let i = 0; i < 30; i++) {
+        const left = Math.random() * (container.clientWidth - 10);
+        const duration = 3 + Math.random() * 2; // 3 to 5 seconds
+        const confetti = createConfetti(left, duration);
+        container.appendChild(confetti);
+
+        confetti.addEventListener('animationend', () => {
+          confetti.remove();
+        });
+      }
+    }
+
+    function clearConfetti() {
+      const container = document.getElementById('voucherResult');
+      const confettiPieces = container.querySelectorAll('.confetti');
+      confettiPieces.forEach(c => c.remove());
+    }
+  </script>
+</body>
+</html>
+
+
+
