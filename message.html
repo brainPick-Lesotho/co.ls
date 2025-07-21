@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Notifications - BrainPick</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #0f0f0f;
+      color: #fff;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    header h1 {
+      font-size: 36px;
+      color: #ffcc00;
+      margin-bottom: 8px;
+    }
+    header p {
+      color: #bbb;
+      font-size: 16px;
+    }
+    .notif-list {
+      max-width: 700px;
+      margin: 0 auto;
+      background: #1f1f1f;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 0 10px #ffcc00aa;
+    }
+    .notif-item {
+      background: #2c2c2c;
+      border-left: 6px solid #ffcc00;
+      padding: 15px 20px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      transition: background 0.3s;
+    }
+    .notif-item:hover {
+      background: #3a3a3a;
+    }
+    .notif-message {
+      font-size: 18px;
+      color: #ffcc00;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+    .notif-timestamp {
+      font-size: 14px;
+      color: #bbb;
+    }
+    .back-btn {
+      display: inline-block;
+      margin-bottom: 30px;
+      color: #ffcc00;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 16px;
+      border: 2px solid #ffcc00;
+      padding: 8px 15px;
+      border-radius: 6px;
+      transition: background 0.3s, color 0.3s;
+    }
+    .back-btn:hover {
+      background: #ffcc00;
+      color: #000;
+    }
+  </style>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+  <header>
+    <h1>🔔 Notifications</h1>
+    <a href="major.html" class="back-btn">← Back to Home</a>
+  </header>
+
+  <div class="notif-list" id="notifList">
+    <!-- Notifications will be loaded here -->
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBdDyCiJ7flRZh2jbaYo5q4Hpjpou-rHAc",
+      authDomain: "brainpicklesotho-ef66c.firebaseapp.com",
+      projectId: "brainpicklesotho-ef66c",
+      storageBucket: "brainpicklesotho-ef66c.appspot.com",
+      messagingSenderId: "273452901797",
+      appId: "1:273452901797:web:edfbc18ee4043c3931f44c",
+      measurementId: "G-CXYY42FTEF"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    function formatDate(timestamp) {
+      if (!timestamp) return '';
+      const date = timestamp.toDate();
+      return date.toLocaleString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    function loadNotifications() {
+      db.collection("notifications")
+        .orderBy("timestamp", "desc")
+        .get()
+        .then(snapshot => {
+          const notifList = document.getElementById("notifList");
+          if (snapshot.empty) {
+            notifList.innerHTML = '<p style="text-align:center; color:#bbb;">No notifications found.</p>';
+            return;
+          }
+
+          let html = "";
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            html += `
+              <div class="notif-item">
+                <div class="notif-message">📣 ${data.message}</div>
+                <div class="notif-timestamp">${formatDate(data.timestamp)}</div>
+              </div>
+            `;
+          });
+          notifList.innerHTML = html;
+        })
+        .catch(error => {
+          console.error("Error loading notifications:", error);
+          document.getElementById("notifList").innerHTML = '<p style="text-align:center; color:#f00;">Error loading notifications.</p>';
+        });
+    }
+
+    loadNotifications();
+  </script>
+</body>
+</html>

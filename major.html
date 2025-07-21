@@ -5,43 +5,53 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Eldah Guessing Game</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Poppins', sans-serif;
       background: #0f0f0f;
       color: #ffffff;
       overflow-x: hidden;
     }
-
     .header {
       padding: 40px 20px;
       text-align: center;
       background: linear-gradient(90deg, #0f0f0f, #1a1a1a);
+      position: relative;
     }
-
     .header h1 {
       font-size: 42px;
       color: #ffcc00;
       margin-bottom: 10px;
     }
-
     .header p {
       font-size: 18px;
       color: #bbb;
     }
-
+    .notification-icon {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 24px;
+      cursor: pointer;
+      color: #ffcc00;
+    }
+    .notif-count {
+      position: absolute;
+      top: -8px;
+      right: -10px;
+      background: red;
+      color: white;
+      font-size: 12px;
+      padding: 2px 6px;
+      border-radius: 50%;
+      display: none;
+    }
     .section-container {
       margin: 40px 20px;
       display: flex;
       flex-direction: column;
       gap: 20px;
     }
-
     .section {
       background: #1f1f1f;
       border-left: 8px solid #ffcc00;
@@ -52,21 +62,14 @@
       justify-content: space-between;
       transition: 0.3s;
     }
-
     .section:hover {
       background: #2c2c2c;
       transform: scale(1.02);
     }
-
     .section .label {
       font-size: 28px;
       font-weight: bold;
     }
-
-    .section .icon {
-      font-size: 32px;
-    }
-
     .section a {
       color: #ffcc00;
       text-decoration: none;
@@ -74,24 +77,47 @@
       font-size: 16px;
       margin-left: 10px;
     }
-
     @media (max-width: 600px) {
       .section {
         flex-direction: column;
         align-items: flex-start;
       }
     }
+
+    .notif-container {
+      margin: 20px;
+      background: #1f1f1f;
+      padding: 15px;
+      border-radius: 10px;
+      display: none;
+    }
+    .notif-container p {
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #ffcc00;
+    }
   </style>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging-compat.js"></script>
+
 </head>
 <body>
 
   <div class="header">
     <h1>🎮 BrainPick</h1>
     <p>Guess numbers, earn stars, and dominate the leaderboard for massive cash prices!</p>
+
+    <div class="notification-icon" onclick="goToMessages()">
+      🔔
+      <span id="notif-count" class="notif-count">0</span>
+    </div>
   </div>
 
   <div class="section-container">
-
     <div class="section" onclick="location.href='Game.html'">
       <div class="label">🕹️ Play Game</div>
       <a href="Game.html">Start</a>
@@ -102,8 +128,8 @@
       <a href="#">View Top Players</a>
     </div>
 
-        <div class="section" onclick="location.href='gifts.html'">
-      <div class="label">🛍️Available Rewards</div>
+    <div class="section" onclick="location.href='gifts.html'">
+      <div class="label">🛍️ Available Rewards</div>
       <a href="#">View gifts available on recent game period</a>
     </div>
 
@@ -113,8 +139,106 @@
     </div>
 
     <div class="section" onclick="location.href='About.html'">
-  <div class="label">ℹ️ About</div>
-  <a href="#">learn more about BrainPick</a>
-</div>
+      <div class="label">ℹ️ About</div>
+      <a href="#">Learn more about BrainPick</a>
+    </div>
+  </div>
+
+  <script>
+   const firebaseConfig = {
+    apiKey: "AIzaSyBdDyCiJ7flRZh2jbaYo5q4Hpjpou-rHAc",
+    authDomain: "brainpicklesotho-ef66c.firebaseapp.com",
+    projectId: "brainpicklesotho-ef66c",
+    storageBucket: "brainpicklesotho-ef66c.appspot.com",
+    messagingSenderId: "273452901797",
+    appId: "1:273452901797:web:edfbc18ee4043c3931f44c",
+    measurementId: "G-CXYY42FTEF"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  checkNotifications();
+
+  function checkNotifications() {
+    db.collection("notifications")
+      .where("seen", "==", false)
+      .get() // Removed orderBy() for now
+      .then(snapshot => {
+        const notifCount = snapshot.size;
+        const notifCountSpan = document.getElementById("notif-count");
+        const notifBox = document.getElementById("globalNotifBox");
+        const notifMessages = document.getElementById("notifMessages");
+
+        if (notifCount > 0) {
+          notifCountSpan.innerText = notifCount;
+          notifCountSpan.style.display = "inline-block";
+          notifBox.style.display = "block";
+
+          let messagesHTML = "";
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            messagesHTML += `<p>📣 ${data.message}</p>`;
+          });
+          notifMessages.innerHTML = messagesHTML;
+        } else {
+          notifCountSpan.style.display = "none";
+          notifBox.style.display = "none";
+          notifMessages.innerHTML = "";
+        }
+      })
+      .catch(error => {
+        console.error("Error fetching notifications:", error);
+      });
+  }
+
+  function goToMessages() {
+    window.location.href = "message.html";
+  }
+
+
+  if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/firebase-messaging-sw.js')
+    .then(registration => {
+      console.log('Service Worker Registered!', registration);
+    })
+    .catch(err => {
+      console.error('Service Worker registration failed: ', err);
+    });
+}
+  </script>
+<script>
+  const messaging = firebase.messaging();
+
+  async function requestPermissionAndGetToken() {
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission === "granted") {
+        const token = await messaging.getToken({
+          vapidKey: "BOwFx5A07hZi_lEJcx2EkUkuOWR8J7p5Qd-LiemxCmgT6pXg00vz8072g7UPdstqP_URpPwSlc3hj4SMIUP6G5s"
+        });
+        console.log("FCM Token:", token);
+        // Save token to Firestore if needed
+      } else {
+        console.warn("Notification permission denied.");
+      }
+    } catch (err) {
+      console.error("Error getting FCM token", err);
+    }
+  }
+
+  // Show foreground push notifications
+  messaging.onMessage((payload) => {
+    console.log("Message received in foreground:", payload);
+    const { title, body, icon } = payload.notification;
+    new Notification(title, { body, icon });
+  });
+
+  // Call it on load
+  requestPermissionAndGetToken();
+</script>
+
 </body>
 </html>
+
+
