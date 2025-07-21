@@ -287,6 +287,30 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
+
+    let gameEnabled = true;
+
+// Check game status from your structure: settingsgameStatus/gameStatus
+db.collection("settingsgameStatus").doc("gameStatus").get().then(doc => {
+  if (doc.exists) {
+    gameEnabled = doc.data().isGameOn;
+
+    if (!gameEnabled) {
+      document.querySelector(".game-container").innerHTML = `
+        <p style="color: red; font-weight: bold; font-size: 1.2rem;">
+        🚫The game is currently shut down 
+        beacause the competetion temporarilly ended. Always check our facebook page or your 
+        app's notifications to see when the game is back on.
+        </p>`;
+    }
+  } else {
+    console.error("⚠️ gameStatus document not found in settingsgameStatus.");
+  }
+}).catch(error => {
+  console.error("❌ Error fetching game status:", error);
+});
+
+
     let currentUser = null;
     let stars = 0;
     let username = "";
@@ -342,54 +366,56 @@
         }, i * 150);
       }
     }
-
     function playGame() {
-      const guess = parseInt(document.getElementById("guessInput").value);
-      const resultBox = document.getElementById("result");
+  const guess = parseInt(document.getElementById("guessInput").value);
+  const resultBox = document.getElementById("result");
 
-      if (!guess || guess < 1 || guess > 6) {
-        resultBox.innerText = "⚠️ Enter a number between 1 and 6.";
-        return;
-      }
-
-      const numbers = [
-        Math.floor(Math.random() * 6) + 1,
-        Math.floor(Math.random() * 6) + 1,
-        Math.floor(Math.random() * 6) + 1
-      ];
-
-if (numbers.includes(guess)) {
-  stars += 1;
-  const now = new Date();
-
-  document.getElementById("starsDisplay").innerText = stars;
-  resultBox.innerText = `🎉 You won! Numbers: ${numbers.join(', ')}. +1 ⭐`;
-
-  db.collection("users").doc(currentUser.uid).update({
-    stars: stars,
-    lastSeen: now.toISOString() // save ISO string timestamp
-  }).catch(error => {
-    console.error("Error updating stars and lastSeen:", error);
-  });
-
-} else {
-  resultBox.innerText = `❌ Try again. Numbers were: ${numbers.join(', ')}.`;
-}
-
-
-      document.getElementById("guessInput").value = "";
+  // 🔒 Check game status from Firebase before proceeding
+  db.collection("settingsgameStatus").doc("gameStatus").get().then(doc => {
+    if (!doc.exists || doc.data().isGameOn === false) {
+      resultBox.innerHTML = `<span style="color: red; font-weight: bold;">🚫The game is currently shut down 
+        beacause the competetion temporarilly ended. Always check our facebook page or your 
+        app's notifications to see when the game is back on</span>`;
+      return;
     }
 
-    document.getElementById("tryBtn").addEventListener("click", playGame);
-    document.getElementById("homeBtn").addEventListener("click", () => {
-      window.location.href = "major.html";
-    });
+    // ✅ Game is ON — continue
+    if (!guess || guess < 1 || guess > 6) {
+      resultBox.innerText = "⚠️ Enter a number between 1 and 6.";
+      return;
+    }
 
-    document.getElementById("guessInput").addEventListener("keypress", e => {
-      if (e.key === "Enter") {
-        playGame();
-      }
-    });
+    const numbers = [
+      Math.floor(Math.random() * 6) + 1,
+      Math.floor(Math.random() * 6) + 1,
+      Math.floor(Math.random() * 6) + 1
+    ];
+
+    if (numbers.includes(guess)) {
+      stars += 1;
+      const now = new Date();
+
+      document.getElementById("starsDisplay").innerText = stars;
+      resultBox.innerText = `🎉 You won! Numbers: ${numbers.join(', ')}. +1 ⭐`;
+
+      db.collection("users").doc(currentUser.uid).update({
+        stars: stars,
+        lastSeen: now.toISOString()
+      }).catch(error => {
+        console.error("Error updating stars and lastSeen:", error);
+      });
+
+    } else {
+      resultBox.innerText = `❌ Try again. Numbers were: ${numbers.join(', ')}.`;
+    }
+
+    document.getElementById("guessInput").value = "";
+  }).catch(error => {
+    console.error("❌ Error checking game status:", error);
+    resultBox.innerText = "⚠️ Could not verify game status. Try again later.";
+  });
+}
+
   </script>
 </body>
 </html>
