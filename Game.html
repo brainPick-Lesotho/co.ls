@@ -415,6 +415,8 @@ db.collection("settingsgameStatus").doc("gameStatus").get().then(doc => {
     resultBox.innerText = "⚠️ Could not verify game status. Try again later.";
   });
 }
+document.getElementById("tryBtn").addEventListener("click", playGame);
+
 
   </script>
 </body>
